@@ -76,6 +76,9 @@ Python 3.8+
 
 pip with FastAPI dependencies installed
 
+cd elevator-simulation/backend
+cd elevator-simulation/frontend
+
 Backend
 
 cd backend
