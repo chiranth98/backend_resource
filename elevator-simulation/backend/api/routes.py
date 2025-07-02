@@ -33,10 +33,10 @@ def create_elevator_request(payload: RequestPayload):
 def get_elevator_state():
     return elevator_system.get_state()
 
-
 @router.post("/auto-generate/start")
 def start_auto_requests(background_tasks: BackgroundTasks):
-    background_tasks.add_task(elevator_system.start_auto_generate)
+    elevator_system.start_auto_generate()
+    background_tasks.add_task(elevator_system.generate_requests)
     return {"status": "auto generation started"}
 
 @router.post("/auto-generate/stop")
@@ -58,12 +58,6 @@ def disable_peak_mode():
 def fetch_metrics():
     return elevator_system.get_metrics()
 
-
-# @router.post("/start")
-# def start_simulation():
-#     elevator_system.start()
-#     return {"status": "started"}
-
 @router.post("/start")
 def start_simulation(background_tasks: BackgroundTasks):
     background_tasks.add_task(elevator_system.start)
@@ -79,3 +73,13 @@ def reset_simulation():
     elevator_system.reset()
     return {"status": "reset"}
 
+@router.get("/status")
+def get_status():
+    return {
+        "speed": elevator_system.speed_multiplier,
+        **elevator_system.get_metrics()
+    }
+
+@router.get("/assignments")
+def get_assignments():
+    return {"logs": elevator_system.assignment_logs[-20:]} 
