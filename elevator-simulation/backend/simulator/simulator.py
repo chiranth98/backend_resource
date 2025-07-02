@@ -18,7 +18,7 @@ class ElevatorSystem:
         }
         self.auto_generate = False
         self.peak_mode = False
-        self.assignment_logs = [] 
+        self.assignment_logs = []
 
     def get_state(self):
         return {"elevators": [e.dict() for e in self.elevators]}
@@ -42,20 +42,17 @@ class ElevatorSystem:
     def update_metrics(self):
         for req in self.requests:
             if req.status == "assigned" and not req.pickup_time:
-                elevator = next(
-                    (e for e in self.elevators if e.id == req.assigned_elevator_id), None)
+                elevator = next((e for e in self.elevators if e.id == req.assigned_elevator_id), None)
                 if elevator and elevator.current_floor == req.origin_floor:
                     req.pickup_time = datetime.now()
                     wait = (req.pickup_time - req.timestamp).total_seconds()
                     self.metrics["wait_times"].append(wait)
 
             if req.pickup_time and not req.dropoff_time:
-                elevator = next(
-                    (e for e in self.elevators if e.id == req.assigned_elevator_id), None)
+                elevator = next((e for e in self.elevators if e.id == req.assigned_elevator_id), None)
                 if elevator and elevator.current_floor == req.destination_floor:
                     req.dropoff_time = datetime.now()
-                    travel = (req.dropoff_time -
-                              req.pickup_time).total_seconds()
+                    travel = (req.dropoff_time - req.pickup_time).total_seconds()
                     self.metrics["travel_times"].append(travel)
 
     def get_metrics(self):
@@ -96,14 +93,11 @@ class ElevatorSystem:
                 if elevator.current_passengers >= elevator.capacity:
                     continue
 
-            # Base score is distance
                 score = abs(elevator.current_floor - req.origin_floor)
 
-            # Bias for idle elevators
                 if elevator.direction == "idle":
-                    score -= 1  # encourage idle
+                    score -= 1
 
-            # Penalize elevators already with long queues
                 score += len(elevator.queue) * 0.5
 
                 if score < best_score:
@@ -115,6 +109,10 @@ class ElevatorSystem:
                 best_elevator.queue.append(req.destination_floor)
                 req.assigned_elevator_id = best_elevator.id
                 req.status = "assigned"
+
+                # Register pickup for accurate drop-off accounting
+                best_elevator.pickup_passenger(req.destination_floor)
+
                 log = f"→ Request {req.id} assigned to Elevator {best_elevator.id} (waited {round(waited_time, 1)}s)"
                 print(log)
                 self.assignment_logs.append(log)
@@ -188,18 +186,15 @@ class ElevatorSystem:
 
         for i, e in enumerate(self.elevators):
             if e.queue:
-                # Average of queued target floors
                 e.preferred_floor = sum(e.queue) // len(e.queue)
             else:
-                # Spread out across different default preferred floors
-                # Elevator 0 → 2, 1 → 4, 2 → 6, etc.
                 e.preferred_floor = min((i + 1) * 2, 9)
 
             print(
                 f"Elevator {e.id} preferred_floor set to {e.preferred_floor}")
 
     async def generate_requests(self):
-        num_floors = 10  # Static for now
+        num_floors = 10
 
         while self.auto_generate:
             if self.peak_mode:
