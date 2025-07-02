@@ -5,7 +5,7 @@ function RequestForm() {
   const [destination, setDestination] = useState(1);
 
   const handleOriginChange = (e) => {
-    const cleaned = e.target.value.replace(/^0+(?=\d)/, ""); // remove leading zeros
+    const cleaned = e.target.value.replace(/^0+(?=\d)/, ""); 
     setOrigin(cleaned === "" ? 0 : parseInt(cleaned, 10));
   };
 

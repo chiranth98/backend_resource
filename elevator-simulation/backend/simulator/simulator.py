@@ -18,7 +18,7 @@ class ElevatorSystem:
         }
         self.auto_generate = False
         self.peak_mode = False
-        self.assignment_logs = []  # NEW: to store assignment history
+        self.assignment_logs = [] 
 
     def get_state(self):
         return {"elevators": [e.dict() for e in self.elevators]}
